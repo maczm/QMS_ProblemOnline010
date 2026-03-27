@@ -355,58 +355,68 @@
       <div class="workstation-select-form">
         <div class="form-row">
           <label class="form-label">工厂：</label>
-          <el-select 
-            v-model="selectedFactory"
-            filterable
-            placeholder="请选择工厂"
-            @change="onFactoryChange"
-            clearable
-          >
-            <el-option
-              v-for="factory in factoryOptions"
-              :key="factory.id"
-              :label="factory.name"
-              :value="factory.id"
+          <div class="select-field">
+            <el-select
+              v-model="selectedFactory"
+              filterable
+              placeholder="请选择工厂"
+              @change="onFactoryChange"
+              clearable
+              popper-class="workstation-select-dropdown"
             >
-            </el-option>
-          </el-select>
+              <el-option
+                v-for="factory in factoryOptions"
+                :key="factory.id"
+                :label="factory.name"
+                :value="factory.id"
+              >
+              </el-option>
+            </el-select>
+          </div>
         </div>
         <div class="form-row">
           <label class="form-label">产线：</label>
-          <el-select append-to-body
-            v-model="selectedProductionLine"
-            filterable
-            placeholder="请选择产线"
-            @change="onProductionLineChange"
-            :disabled="!selectedFactory"
-            clearable
-          >
-            <el-option
-              v-for="line in productionLineOptions"
-              :key="line.id"
-              :label="line.name"
-              :value="line.id"
+          <div class="select-field">
+            <el-select
+              append-to-body
+              v-model="selectedProductionLine"
+              filterable
+              placeholder="请选择产线"
+              @change="onProductionLineChange"
+              :disabled="!selectedFactory"
+              clearable
+              popper-class="workstation-select-dropdown"
             >
-            </el-option>
-          </el-select>
+              <el-option
+                v-for="line in productionLineOptions"
+                :key="line.id"
+                :label="line.name"
+                :value="line.id"
+              >
+              </el-option>
+            </el-select>
+          </div>
         </div>
         <div class="form-row">
           <label class="form-label">工位：</label>
-          <el-select
-            v-model="selectedWorkStation"
-            filterable
-            placeholder="请选择工位"
-            :disabled="!selectedProductionLine"
-            clearable
-          >
-            <el-option
-              v-for="station in workStationOptions"
-              :key="station.id"
-              :label="station.name"
-              :value="station.id"
+          <div class="select-field">
+            <el-select
+              v-model="selectedWorkStation"
+              filterable
+              placeholder="请选择工位"
+              :disabled="!selectedProductionLine"
+              clearable
+              popper-class="workstation-select-dropdown"
             >
-            </el-option>
-          </el-select>
+              <el-option
+                v-for="station in workStationOptions"
+                :key="station.id"
+                :label="station.name"
+                :value="station.id"
+              >
+              </el-option>
+            </el-select>
+          </div>
         </div>
       </div>
       <div slot="footer" class="dialog-footer">
@@ -1135,10 +1145,14 @@ export default {
           FilePicker: base64Data,
         };
         window.saveImgFils(params, (response) => {
-          if (response.code === 0) {
+          if (response && `${response.code}` === "0") {
             resolve(response.data);
           } else {
-            reject(new Error(response.msg || "图片上传失败"));
+            reject(
+              new Error(
+                response?.msg || response?.message || "图片上传失败",
+              ),
+            );
           }
         });
       });
@@ -1196,7 +1210,10 @@ export default {
             problem.autoHandle !== undefined
               ? problem.autoHandle
               : originalProblem.autoHandle || 0,
-          isFit: problemProblem.isFit,
+          isFit:
+            problem.isFit !== undefined
+              ? problem.isFit
+              : originalProblem.isFit || 0,
         };
       });
     },
@@ -1544,14 +1561,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.workstation-select-form .el-select .el-select-dropdown__item {
-  white-space: normal !important;
-  word-break: break-all !important;
-  word-wrap: break-word !important;
-  height: auto !important;
-  padding: 12px 20px !important;
-  line-height: 1.5 !important;
-}
 textarea {
   min-width: 85px !important;
 }
@@ -1716,7 +1725,7 @@ textarea {
 .workstation-select-form {
   .form-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: 20px;
 
     .form-label {
@@ -1724,10 +1733,15 @@ textarea {
       font-size: 14px;
       color: #606266;
       margin-right: 10px;
+      line-height: 40px;
     }
 
-    .el-select {
+    .select-field {
       flex: 1;
+
+      .el-select {
+        width: 100%;
+      }
     }
   }
 }
@@ -2388,5 +2402,23 @@ textarea {
 .dialog-footer {
   text-align: right;
   padding-top: 20px;
+}
+</style>
+
+<style lang="scss">
+.workstation-select-dropdown .el-select-dropdown__item {
+  height: auto;
+  min-height: 34px;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.workstation-select-dropdown .el-select-dropdown__item span {
+  white-space: normal;
+  line-height: 1.5;
 }
 </style>
