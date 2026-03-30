@@ -22,6 +22,7 @@
             <div class="order-input">
               <el-input
                 v-model="searchParam"
+                @input="searchParam = $event.toUpperCase()"
                 size="small"
                 class="order-field"
                 placeholder="订单号/月顺序号/VIN/钢印号"
@@ -292,7 +293,7 @@
                 </el-radio-group>
 
                 <span
-                  v-if="problem.isFit === 1"
+                  v-if="problem.isFTT === 1"
                   class="problem-label"
                   style="margin-left: 50px; color: red"
                   >质量门问题</span
@@ -572,6 +573,9 @@
           <el-radio :label="1">是</el-radio>
         </el-radio-group>
       </div>
+      <div class="problem-row" v-if="false">
+        <button @click="openFile()">查看文件</button>
+      </div>
       <div class="fixed-action-buttons">
         <el-button
           type="primary"
@@ -580,6 +584,18 @@
           >保存并返回
         </el-button>
       </div>
+    </el-dialog>
+    <el-dialog
+      :visible.sync="showPdf"
+      fullscreen
+      append-to-body
+      class="pdf-full-dialog"
+      ><iframe
+        :src="'/湖南云畅通信科技有限公司结算单.pdf'"
+        width="100%"
+        height="100%"
+        frameborder="0"
+      ></iframe>
     </el-dialog>
   </div>
 </template>
@@ -660,6 +676,8 @@ export default {
 
       // 标签页
       showIsHandle: "0",
+
+      showPdf: false,
     };
   },
   mounted() {
@@ -732,6 +750,9 @@ export default {
     },
   },
   methods: {
+    openFile() {
+      this.showPdf = true;
+    },
     async handleCloseDialog(type) {
       this.syncProblemData();
       let saveData = {};
@@ -1001,7 +1022,7 @@ export default {
           imageList: imageList,
           pushStatus: 0,
           autoHandle: item.autoHandle || 0,
-          isFit: item.isFit || 0,
+          isFTT: item.isFTT || 0,
         };
       });
     },
@@ -1106,6 +1127,10 @@ export default {
     },
     // 删除问题
     removeProblem(question) {
+      // 避免删除时弹出编辑对话框
+      this.dialogProblemVisible == false;
+      this.dialogTestVisible == false;
+
       const params = {
         flag: "DelQuestion",
         questionId: question.questionId,
@@ -1149,9 +1174,7 @@ export default {
             resolve(response.data);
           } else {
             reject(
-              new Error(
-                response?.msg || response?.message || "图片上传失败",
-              ),
+              new Error(response?.msg || response?.message || "图片上传失败"),
             );
           }
         });
@@ -1210,10 +1233,10 @@ export default {
             problem.autoHandle !== undefined
               ? problem.autoHandle
               : originalProblem.autoHandle || 0,
-          isFit:
-            problem.isFit !== undefined
-              ? problem.isFit
-              : originalProblem.isFit || 0,
+          isFTT:
+            problem.isFTT !== undefined
+              ? problem.isFTT
+              : originalProblem.isFTT || 0,
         };
       });
     },
@@ -1561,6 +1584,23 @@ export default {
 </script>
 
 <style scoped lang="scss">
+::v-deep .pdf-full-dialog {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+::v-deep .el-dialog__body {
+  padding: 0 !important;
+  height: 100vh;
+  margin: 0;
+  margin-top: 20px;
+}
+.full-iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: none;
+}
+
 textarea {
   min-width: 85px !important;
 }
