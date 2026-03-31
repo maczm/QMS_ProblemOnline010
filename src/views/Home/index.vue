@@ -1584,23 +1584,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-::v-deep .pdf-full-dialog {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-::v-deep .el-dialog__body {
-  padding: 0 !important;
-  height: 100vh;
-  margin: 0;
-  margin-top: 20px;
-}
-.full-iframe {
-  width: 100%;
-  height: 100%;
-  display: block;
-  border: none;
-}
-
 textarea {
   min-width: 85px !important;
 }

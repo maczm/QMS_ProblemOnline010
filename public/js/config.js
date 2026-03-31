@@ -190,19 +190,19 @@ window.getRespTeam = function (callback) {
 };
 window.getRespEmployee = function (callback) {
   let obj = [
-    { value: "1", label: "员工1" },
-    { value: "2", label: "员工2" },
+    { value: "员工1", label: "员工1" },
+    { value: "员工2", label: "员工2" },
   ];
   callback(obj);
 };
 window.getProblemSource = function (callback) {
   let obj = [
     {
-      value: "1",
+      value: "问题来源1",
       label: "问题来源1",
     },
     {
-      value: "2",
+      value: "问题来源2",
       label: "问题来源2",
     },
   ];
