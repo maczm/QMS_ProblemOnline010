@@ -622,6 +622,7 @@ export default {
       // 判断是否是手机
       isApp: false,
       isCollapsed: true,
+      searchTimer: null, // 防抖定时器
       currentOrder: "",
       monthlySequence: "",
       frameNumber: "",
@@ -726,6 +727,10 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener("resize", this.setTableMaxHeight);
+    // 清理防抖定时器
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer);
+    }
   },
   computed: {
     // 计算单据状态
@@ -1083,15 +1088,23 @@ export default {
     },
     // 处理订单搜索
     handleOrderSearch() {
-      if (
-        !this.currentUserWorkStationId ||
-        this.currentUserWorkStationId.trim() === ""
-      ) {
-        this.$message.warning("请先选择工位");
-        return;
+      // 清除之前的定时器
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer);
       }
-      const params = this.buildQueryParams("wipOrderNo");
-      this.getData(params);
+
+      // 设置新的定时器（500ms后执行）
+      this.searchTimer = setTimeout(() => {
+        if (
+          !this.currentUserWorkStationId ||
+          this.currentUserWorkStationId.trim() === ""
+        ) {
+          this.$message.warning("请先选择工位");
+          return;
+        }
+        const params = this.buildQueryParams("wipOrderNo");
+        this.getData(params);
+      }, 500);
     },
     // 处理月顺序号搜索
     handleMonthlySequenceSearch() {
