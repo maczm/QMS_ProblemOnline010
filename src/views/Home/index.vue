@@ -254,14 +254,15 @@
               </div>
               <div class="problem-row">
                 <span class="problem-label">责任人：</span>
-                <el-input
-                  v-model="problem.respEmployee"
-                  class="problem-input"
-                  :disabled="true"
-                  type="textarea"
-                  autosize
-                >
-                </el-input>
+                <el-select v-model="problem.respEmployee" disabled size="small">
+                  <el-option
+                    v-for="item in respEmployeeOptions"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value"
+                  >
+                  </el-option>
+                </el-select>
                 <span class="problem-label">问题来源：</span>
                 <el-select
                   v-model="problem.problemSource"
@@ -510,7 +511,12 @@
       </div>
       <div class="problem-row">
         <span class="problem-label">责任部门：</span>
-        <el-select v-model="dialogProblemData.respDept" size="small" clearable>
+        <el-select
+          v-model="dialogProblemData.respDept"
+          size="small"
+          clearable
+          @change="onRespDeptChange"
+        >
           <el-option
             v-for="item in respDeptOptions"
             :key="item.value"
@@ -527,7 +533,7 @@
           @change="onRespTeamChange(dialogProblemData)"
         >
           <el-option
-            v-for="item in respTeamOptions"
+            v-for="item in dialogRespTeamOptions"
             :key="item.value"
             :label="item.label"
             :value="item.value"
@@ -537,15 +543,19 @@
       </div>
       <div class="problem-row">
         <span class="problem-label">责任人：</span>
-        <el-input
+        <el-select
           v-model="dialogProblemData.respEmployee"
-          class="problem-input"
-          type="textarea"
-          autosize
-          :disabled="customDisable(dialogProblemData)"
-          v-keyboard-focus
+          size="small"
+          clearable
         >
-        </el-input>
+          <el-option
+            v-for="item in dialogRespEmployeeOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
         <span class="problem-label">问题来源：</span>
         <el-select
           v-model="dialogProblemData.problemSource"
@@ -638,6 +648,10 @@ export default {
       respEmployeeOptions: [],
       problemSourceOptions: [],
 
+      // dialog专用筛选选项
+      dialogRespTeamOptions: [],
+      dialogRespEmployeeOptions: [],
+
       // 新增数据
       tableMaxHeight: 300,
       inspectionList: [],
@@ -694,16 +708,19 @@ export default {
       }
     });
     window.getRespDept((res) => {
-      console.log(res, "getRespDept");
+      console.log("获取责任部门返回：", JSON.parse(JSON.stringify(res)));
       this.respDeptOptions = res;
     });
     window.getRespTeam((res) => {
+      console.log("获取责任班组返回：", JSON.parse(JSON.stringify(res)));
       this.respTeamOptions = res;
     });
-    // window.getRespEmployee((res) => {
-    //   this.respEmployeeOptions = res;
-    // });
+    window.getRespEmployee((res) => {
+      console.log("获取责任人返回：", JSON.parse(JSON.stringify(res)));
+      this.respEmployeeOptions = res;
+    });
     window.getProblemSource((res) => {
+      console.log("获取问题来源返回：", JSON.parse(JSON.stringify(res)));
       this.problemSourceOptions = res;
     });
   },
@@ -757,9 +774,8 @@ export default {
       this.syncProblemData();
       let saveData = {};
       if (type === "SaveInspection") {
-        console.log("保存检验项");
+        // 保存检验项逻辑
       } else if (type === "SaveQuestion") {
-        console.log(this.dialogProblemData, "this.dialogProblemData");
         let aa = { ...this.dialogProblemData };
         const questionId = aa.questionId;
         const question = aa.question;
@@ -811,32 +827,41 @@ export default {
           problemSource: problemSource,
           autoHandle: autoHandle,
         };
-        console.log(saveData, "saveData");
+        console.log("保存问题项参数：", JSON.parse(JSON.stringify(saveData)));
         window.InspectionOnlineSingleSave(saveData, (res) => {
+          console.log("保存问题项返回：", JSON.parse(JSON.stringify(res)));
           this.problemList.find(
             (item) => item.questionId === saveData.id,
           ).testBy = res.testBy;
         });
       }
-      console.log(JSON.parse(JSON.stringify(saveData)), "最终保存的数据");
     },
-    // 根据选择的班组自动带出责任人
+    // 责任部门变化时，筛选班组
+    onRespDeptChange(dept) {
+      this.dialogProblemData.respTeam = "";
+      this.dialogProblemData.respEmployee = "";
+      this.dialogRespEmployeeOptions = [];
+      if (dept) {
+        this.dialogRespTeamOptions = this.respTeamOptions.filter(
+          (t) => t.dept === dept,
+        );
+      } else {
+        this.dialogRespTeamOptions = [];
+      }
+    },
+    // 根据选择的班组筛选责任人
     onRespTeamChange(problemData) {
       if (!problemData.respTeam) {
         problemData.respEmployee = "";
+        this.dialogRespEmployeeOptions = [];
         return;
       }
-
-      // 查找对应的班组数据
-      const selectedTeam = this.respTeamOptions.find(
-        (team) => team.value === problemData.respTeam,
+      // 筛选该班组下的责任人
+      this.dialogRespEmployeeOptions = this.respEmployeeOptions.filter(
+        (employee) => employee.team === problemData.respTeam,
       );
-      if (selectedTeam && selectedTeam.employee) {
-        problemData.respEmployee = selectedTeam.employee;
-      } else {
-        problemData.respEmployee = "";
-      }
     },
+
     handleOpenDialog(item, index, type) {
       if (this.pushFlag) {
         this.pushFlag = false;
@@ -849,6 +874,22 @@ export default {
         this.dialogTestVisible = this.dialogVisible !== true;
       } else if (type === "problem") {
         this.dialogProblemData = item;
+        // 初始化dialog筛选选项：根据已有部门筛选班组
+        if (item.respDept) {
+          this.dialogRespTeamOptions = this.respTeamOptions.filter(
+            (t) => t.dept === item.respDept,
+          );
+        } else {
+          this.dialogRespTeamOptions = [];
+        }
+        // 根据已有班组筛选责任人
+        if (item.respTeam) {
+          this.dialogRespEmployeeOptions = this.respEmployeeOptions.filter(
+            (e) => e.team === item.respTeam,
+          );
+        } else {
+          this.dialogRespEmployeeOptions = [];
+        }
         // 避免图片预览被覆盖
         this.dialogProblemVisible = this.dialogVisible !== true;
       }
@@ -892,8 +933,9 @@ export default {
             };
             data.pushStatus = 1;
           }
-          console.log(pushData, "推送飞书");
+          console.log("推送飞书参数：", JSON.parse(JSON.stringify(pushData)));
           window.pushFeiShu(pushData, (res) => {
+            console.log("推送飞书返回：", JSON.parse(JSON.stringify(res)));
             if (res.code === "0") {
               this.$message({
                 message: "推送飞书成功",
@@ -943,7 +985,7 @@ export default {
               this.monthlySequence = res.data;
               this.handleMonthlySequenceSearch();
             } else {
-              console.log("未定义的扫码类型");
+              // 未定义的扫码类型
             }
           }
         });
@@ -957,8 +999,9 @@ export default {
     },
     // 查询检验项和问题
     getData(value) {
+      console.log("检验项查询参数：", JSON.parse(JSON.stringify(value)));
       window.dataItem(value, (data) => {
-        console.log(data, "问题列表");
+        console.log("查询检验项返回：", JSON.parse(JSON.stringify(data)));
         if (data.code === "0") {
           // 保存原始数据
           this.originalData = { ...data };
@@ -1093,9 +1136,9 @@ export default {
         wipOrderNo: this.currentOrder,
       };
 
-      console.log(JSON.parse(JSON.stringify(params)), "添加问题参数");
+      console.log("添加问题参数：", JSON.parse(JSON.stringify(params)));
       window.questionAdd(params, (response) => {
-        console.log(response, "添加接口返回的数据");
+        console.log("添加问题返回：", JSON.parse(JSON.stringify(response)));
         // 成功后，使用后端返回的数据创建新问题
         const serverProblem = {
           questionId: response.questionId,
@@ -1122,7 +1165,6 @@ export default {
           this.originalData.questionItem = [];
         }
         this.originalData.questionItem.push({ ...serverProblem });
-        console.log(this.originalData.questionItem, "添加问题后的数据");
       });
     },
     // 删除问题
@@ -1136,8 +1178,9 @@ export default {
         questionId: question.questionId,
       };
 
-      console.log(params, "删除数据");
+      console.log("删除问题参数：", JSON.parse(JSON.stringify(params)));
       window.questionDel(params, (response) => {
+        console.log("删除问题返回：", JSON.parse(JSON.stringify(response)));
         // 使用 filter 方法删除，避免索引问题
         this.problemList = this.problemList.filter(
           (problem) => problem.questionId !== response.questionId,
@@ -1149,7 +1192,6 @@ export default {
               (item) => item.questionId !== response.questionId,
             );
         }
-        console.log(this.originalData.questionItem, "删除问题后的数据");
       });
     },
     // 图片转Base64
@@ -1546,9 +1588,14 @@ export default {
 
       // 同步到服务器
       if (typeof window.setCurrentUserWorkStation === "function") {
+        console.log(
+          "同步工位参数：",
+          JSON.parse(JSON.stringify(this.currentUserWorkStationId)),
+        );
         window.setCurrentUserWorkStation(
           this.currentUserWorkStationId,
           (res) => {
+            console.log("同步工位返回：", JSON.parse(JSON.stringify(res)));
             if (res && res.code === "0") {
               this.$message({
                 message: "工位选择成功并已同步至服务器",

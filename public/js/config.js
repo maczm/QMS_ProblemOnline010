@@ -12,8 +12,6 @@ window.getCurrentUserWorkStation = function (callback) {
 
 // 同步当前选中工位到服务器（可被后端覆盖）
 window.setCurrentUserWorkStation = function (workStationId, callback) {
-  console.log("setCurrentUserWorkStation workStationId:", workStationId);
-  // 模拟接口响应
   callback({ code: "0", msg: "同步成功" });
 };
 
@@ -67,7 +65,6 @@ window.getWorkStation = function (productionLineId, callback) {
 };
 // 查询工位检验项列表
 window.dataItem = function (Level, callback) {
-  console.log(Level, "检验项查询参数");
   let data = {
     code: "0",
     msg: "查询成功",
@@ -156,7 +153,6 @@ window.questionAdd = function (data, callback) {
 };
 window.questionDel = function (data, callback) {
   // 入参 data
-  console.log(data, "测试数据");
   callback(data);
 };
 // 保存图片
@@ -183,15 +179,15 @@ window.getRespDept = function (callback) {
 };
 window.getRespTeam = function (callback) {
   let obj = [
-    { value: "班组1", label: "班组1", employee: "员工1" },
-    { value: "班组2", label: "班组2", employee: "员工2" },
+    { value: "班组1", label: "班组1", dept: "部门1" },
+    { value: "班组2", label: "班组2", dept: "部门2" },
   ];
   callback(obj);
 };
 window.getRespEmployee = function (callback) {
   let obj = [
-    { value: "员工1", label: "员工1" },
-    { value: "员工2", label: "员工2" },
+    { value: "员工1", label: "员工1", team: "班组1" },
+    { value: "员工2", label: "员工2", team: "班组2" },
   ];
   callback(obj);
 };
