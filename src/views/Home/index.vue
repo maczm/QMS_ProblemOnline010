@@ -1104,7 +1104,7 @@ export default {
         }
         const params = this.buildQueryParams("wipOrderNo");
         this.getData(params);
-      }, 500);
+      }, 2000);
     },
     // 处理月顺序号搜索
     handleMonthlySequenceSearch() {
