@@ -1207,12 +1207,43 @@ export default {
         }
       });
     },
-    // 图片转Base64
-    fileToBase64(file) {
+    // 图片压缩
+    compressImage(file, maxWidth = 3000, maxHeight = 3000, quality = 0.92) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            // 计算压缩后的尺寸
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = Math.floor(width * ratio);
+              height = Math.floor(height * ratio);
+            }
+            
+            // 创建canvas进行压缩
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // 转为JPEG格式的base64
+            const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+            console.log("图片压缩请求：", JSON.parse(JSON.stringify({
+              原始尺寸: `${img.width}x${img.height}`,
+              压缩后尺寸: `${width}x${height}`,
+              压缩后大小: `${(compressedBase64.length / 1024).toFixed(1)}KB`
+            })));
+            resolve(compressedBase64);
+          };
+          img.onerror = (error) => reject(error);
+        };
         reader.onerror = (error) => reject(error);
       });
     },
@@ -1434,7 +1465,7 @@ export default {
         // 处理每个选中的文件
         for (const file of files) {
           // 转换为base64
-          const base64Data = await this.fileToBase64(file);
+          const base64Data = await this.compressImage(file);
           // 上传图片
           const serverUrl = await this.uploadSingleImage(
             base64Data,
