@@ -1208,7 +1208,7 @@ export default {
       });
     },
     // 图片压缩
-    compressImage(file, maxWidth = 3000, maxHeight = 3000, quality = 0.92) {
+    compressImage(file, maxWidth = 2048, maxHeight = 2048, quality = 0.90) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
