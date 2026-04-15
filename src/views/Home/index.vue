@@ -654,10 +654,8 @@ export default {
       dialogRespEmployeeOptions: [],
 
       // 新增数据
-      tableMaxHeight: 300,
       inspectionList: [],
       problemList: [],
-      nextProblemId: 1,
 
       // 图片预览对话框
       dialogImageUrl: "",
@@ -709,19 +707,19 @@ export default {
       }
     });
     window.getRespDept((res) => {
-      console.log("获取责任部门返回：", JSON.parse(JSON.stringify(res)));
+
       this.respDeptOptions = res;
     });
     window.getRespTeam((res) => {
-      console.log("获取责任班组返回：", JSON.parse(JSON.stringify(res)));
+
       this.respTeamOptions = res;
     });
     window.getRespEmployee((res) => {
-      console.log("获取责任人返回：", JSON.parse(JSON.stringify(res)));
+
       this.respEmployeeOptions = res;
     });
     window.getProblemSource((res) => {
-      console.log("获取问题来源返回：", JSON.parse(JSON.stringify(res)));
+
       this.problemSourceOptions = res;
     });
   },
@@ -832,9 +830,9 @@ export default {
           problemSource: problemSource,
           autoHandle: autoHandle,
         };
-        console.log("保存问题项参数：", JSON.parse(JSON.stringify(saveData)));
+
         window.InspectionOnlineSingleSave(saveData, (res) => {
-          console.log("保存问题项返回：", JSON.parse(JSON.stringify(res)));
+
           this.problemList.find(
             (item) => item.questionId === saveData.id,
           ).testBy = res.testBy;
@@ -938,9 +936,9 @@ export default {
             };
             data.pushStatus = 1;
           }
-          console.log("推送飞书参数：", JSON.parse(JSON.stringify(pushData)));
+
           window.pushFeiShu(pushData, (res) => {
-            console.log("推送飞书返回：", JSON.parse(JSON.stringify(res)));
+
             if (res.code === "0") {
               this.$message({
                 message: "推送飞书成功",
@@ -1004,9 +1002,9 @@ export default {
     },
     // 查询检验项和问题
     getData(value) {
-      console.log("检验项查询参数：", JSON.parse(JSON.stringify(value)));
+
       window.dataItem(value, (data) => {
-        console.log("查询检验项返回：", JSON.parse(JSON.stringify(data)));
+
         if (data.code === "0") {
           // 保存原始数据
           this.originalData = { ...data };
@@ -1149,9 +1147,9 @@ export default {
         wipOrderNo: this.currentOrder,
       };
 
-      console.log("添加问题参数：", JSON.parse(JSON.stringify(params)));
+
       window.questionAdd(params, (response) => {
-        console.log("添加问题返回：", JSON.parse(JSON.stringify(response)));
+
         // 成功后，使用后端返回的数据创建新问题
         const serverProblem = {
           questionId: response.questionId,
@@ -1183,17 +1181,17 @@ export default {
     // 删除问题
     removeProblem(question) {
       // 避免删除时弹出编辑对话框
-      this.dialogProblemVisible == false;
-      this.dialogTestVisible == false;
+      this.dialogProblemVisible = false;
+      this.dialogTestVisible = false;
 
       const params = {
         flag: "DelQuestion",
         questionId: question.questionId,
       };
 
-      console.log("删除问题参数：", JSON.parse(JSON.stringify(params)));
+
       window.questionDel(params, (response) => {
-        console.log("删除问题返回：", JSON.parse(JSON.stringify(response)));
+
         // 使用 filter 方法删除，避免索引问题
         this.problemList = this.problemList.filter(
           (problem) => problem.questionId !== response.questionId,
@@ -1488,7 +1486,7 @@ export default {
           showClose: true,
         });
       } catch (error) {
-        console.error("图片上传失败:", error);
+
         this.$message({
           message: "图片上传失败: " + error.message,
           type: "error",
@@ -1639,7 +1637,7 @@ export default {
         window.setCurrentUserWorkStation(
           this.currentUserWorkStationId,
           (res) => {
-            console.log("同步工位返回：", JSON.parse(JSON.stringify(res)));
+
             if (res && res.code === "0") {
               this.$message({
                 message: "工位选择成功并已同步至服务器",
