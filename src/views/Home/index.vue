@@ -1149,33 +1149,43 @@ export default {
 
 
       window.questionAdd(params, (response) => {
+        // 校验后台返回结果
+        if (response.code === "0") {
+          // 成功后，使用后端返回的数据创建新问题
+          const serverProblem = {
+            questionId: response.questionId,
+            question: "",
+            imgs: "",
+            testBy: response.testBy,
+            workCenter: response.workCenter,
+            isHandle: 0,
+            handleReMark: "",
+            handImgs: "",
+            handleBy: "",
+            isClose: 0,
+            confirmReMark: "",
+            confirmImgs: "",
+            confirmBy: "",
+            imageList: [],
+            autoHandle: 0,
+          };
 
-        // 成功后，使用后端返回的数据创建新问题
-        const serverProblem = {
-          questionId: response.questionId,
-          question: "",
-          imgs: "",
-          testBy: response.testBy,
-          workCenter: response.workCenter,
-          isHandle: 0,
-          handleReMark: "",
-          handImgs: "",
-          handleBy: "",
-          isClose: 0,
-          confirmReMark: "",
-          confirmImgs: "",
-          confirmBy: "",
-          imageList: [],
-          autoHandle: 0,
-        };
-
-        // 添加到 problemList
-        this.problemList.push(serverProblem);
-        // 同时添加到 originalData
-        if (!this.originalData.questionItem) {
-          this.originalData.questionItem = [];
+          // 添加到 problemList
+          this.problemList.push(serverProblem);
+          // 同时添加到 originalData
+          if (!this.originalData.questionItem) {
+            this.originalData.questionItem = [];
+          }
+          this.originalData.questionItem.push({ ...serverProblem });
+        } else {
+          // 添加失败，显示错误原因
+          this.$message({
+            message: response.msg || "添加失败",
+            type: "error",
+            duration: 3000,
+            showClose: true,
+          });
         }
-        this.originalData.questionItem.push({ ...serverProblem });
       });
     },
     // 删除问题
